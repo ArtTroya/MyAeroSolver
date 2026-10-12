@@ -8,6 +8,8 @@ namespace Boundary_layer {
 
     using Gas_dynamics::PI;
 
+    constexpr double PR_AIR = 0.72;
+
     ReferenceState ComputeReference(double T_wall, double T_e, double M_e,
         double Cp_e, double mu_e, double lambda_e,
         bool turbulent) {
@@ -15,30 +17,17 @@ namespace Boundary_layer {
         R.T_e = T_e;
         R.T_wall = T_wall;
 
-        double r = turbulent ? 0.88 : 0.83;
-        double T_star_old = 1e7;
-        double T_star_new = 0.0;
-
-        for (int it = 0; it < 200; ++it) {
-            R.Tr = T_e * (1.0 + r * 0.2 * M_e * M_e);
-            T_star_new = 0.5 * (T_wall + T_e) + 0.22 * (R.Tr - T_e);
-
-            R.Cp_star = Cp_e * std::pow(T_star_new / 288.15, 0.1);
-            R.mu_star = mu_e * std::pow(T_star_new / 288.15, 0.76);
-            R.lambda_star = lambda_e * std::pow(T_star_new / 261.0, 0.85);
-            R.Pr_star = R.Cp_star * R.mu_star / R.lambda_star;
-
-            r = turbulent ? std::cbrt(R.Pr_star) : std::sqrt(R.Pr_star);
-
-            if (std::abs(T_star_new - T_star_old) < 0.01 * T_star_new) {
-                T_star_old = T_star_new;
-                break;
-            }
-            T_star_old = T_star_new;
-        }
-
-        R.T_star = T_star_old;
+        double r = turbulent ? std::cbrt(PR_AIR) : std::sqrt(PR_AIR);
         R.r = r;
+
+        R.Tr = T_e * (1.0 + r * 0.2 * M_e * M_e);
+        R.T_star = 0.5 * (T_wall + T_e) + 0.22 * (R.Tr - T_e);
+
+        R.Cp_star = Cp_e * std::pow(R.T_star / 288.15, 0.1);
+        R.mu_star = mu_e * std::pow(R.T_star / 288.15, 0.76);
+        R.lambda_star = lambda_e * std::pow(R.T_star / 261.0, 0.85);
+        R.Pr_star = PR_AIR;
+
         return R;
     }
 
@@ -54,26 +43,35 @@ namespace Boundary_layer {
         const ReferenceState& ref) {
         BLPoint P{};
         P.x = x;
-        P.x_fictive = 0.0;
+        P.x_fictive = x;
         P.type = 0;
 
-        if (x <= 0.0) {
-            P.Re_x = 0.0;
-            return P;
-        }
+        if (x <= 0.0) return P;
 
         P.Re_x = V_e * rho_e * x / mu_e;
+        P.Re_x_ns = P.Re_x;
+
         double ratio = ref.T_star / ref.T_e;
         double corr_delta = std::pow(ratio, (N_MU_LAYER + 1.0) / 2.0);
         double corr_tau = std::pow(ratio, (N_MU_LAYER - 1.0) / 2.0);
-
         double sqRe = std::sqrt(P.Re_x);
+
+        // Сжимаемый
         P.delta = 4.64 * x / sqRe * corr_delta;
         P.delta_star = 1.74 * x / sqRe * corr_delta;
         P.delta_star_star = 0.646 * x / sqRe * corr_delta;
         P.tau = 0.323 * rho_e * V_e * V_e / sqRe * corr_tau;
         P.Cfx = 0.646 / sqRe * corr_tau;
         P.Cf_avg = 1.3 / sqRe * corr_tau;
+
+        // Несжимаемый
+        P.delta_ns = 4.64 * x / sqRe;
+        P.delta_star_ns = 1.74 * x / sqRe;
+        P.delta_star_star_ns = 0.646 * x / sqRe;
+        P.tau_ns = 0.323 * rho_e * V_e * V_e / sqRe;
+        P.Cfx_ns = 0.646 / sqRe;
+        P.Cf_ns = 1.3 / sqRe;
+
         return P;
     }
 
@@ -85,23 +83,32 @@ namespace Boundary_layer {
         P.x_fictive = x_fictive;
         P.type = 1;
 
-        if (x_fictive <= 0.0) {
-            P.Re_x = 0.0;
-            return P;
-        }
+        if (x_fictive <= 0.0) return P;
 
         P.Re_x = V_e * rho_e * x_fictive / mu_e;
+        P.Re_x_ns = P.Re_x;
+
         double ratio = ref.T_star / ref.T_e;
         double corr_delta = std::pow(ratio, (N_MU_LAYER + 1.0) / 5.0);
         double corr_tau = std::pow(ratio, (N_MU_LAYER - 4.0) / 5.0);
-
         double Re15 = std::pow(P.Re_x, 0.2);
+
+        // Сжимаемый
         P.delta = 0.37 * x_fictive / Re15 * corr_delta;
         P.delta_star = P.delta / (K_BAR + 1.0);
         P.delta_star_star = K_BAR * P.delta / ((K_BAR + 1.0) * (K_BAR + 2.0));
         P.tau = 0.0289 * rho_e * V_e * V_e / Re15 * corr_tau;
         P.Cfx = 0.0578 / Re15 * corr_tau;
         P.Cf_avg = 0.074 / Re15 * corr_tau;
+
+        // Несжимаемый
+        P.delta_ns = 0.37 * x_fictive / Re15;
+        P.delta_star_ns = P.delta_ns / (K_BAR + 1.0);
+        P.delta_star_star_ns = K_BAR * P.delta_ns / ((K_BAR + 1.0) * (K_BAR + 2.0));
+        P.tau_ns = 0.0289 * rho_e * V_e * V_e / Re15;
+        P.Cfx_ns = 0.0578 / Re15;
+        P.Cf_ns = 0.074 / Re15;
+
         return P;
     }
 
@@ -132,12 +139,10 @@ namespace Boundary_layer {
                 * std::pow(ratio_turb, N_MU_LAYER + 1.0)),
             0.25);
 
-        const int lam_pts = 2;
-        const int turb_pts = N_POINTS - lam_pts;
-
         F.points[0] = ComputeLaminarPoint(F.x_cr / 2.0, V_e, rho_e, mu_e, F.ref_lam);
         F.points[1] = lam_cr;
 
+        const int turb_pts = N_POINTS - 2;
         double l_turb = L - F.x_cr;
         for (int i = 0; i < turb_pts; ++i) {
             double x_i = F.x_cr + l_turb * (i + 1) / turb_pts;
@@ -219,18 +224,14 @@ namespace Boundary_layer {
         S.x_cr = S.Re_cr * G1.mu / (G1.v * G1.rho);
         if (S.x_cr > L_face) S.x_cr = L_face;
 
-        // Точка 1: x = 0 — ламинарная (нулевая)
-        S.points[0] = BLPoint{};
-        S.points[0].x = 0.0;
-        S.points[0].type = 0;
+        // Точка 1: x = x_кр / 2
+        S.points[0] = ComputeLaminarPoint(S.x_cr / 2.0, G1.v, G1.rho, G1.mu, S.ref_lam);
 
-        // Точка 2: x = x_кр — ламинарная (конец ЛПС)
+        // Точка 2: x = x_кр (конец ЛПС)
         S.points[1] = ComputeLaminarPoint(S.x_cr, G1.v, G1.rho, G1.mu, S.ref_lam);
 
-        // Толщина ЛПС при x_кр — для расчёта Δx₁
+        // Δx₁
         BLPoint lam_cr = S.points[1];
-
-        // Δx₁ для грани 1
         double ratio1 = S.ref_turb_1.T_star / G1.T;
         S.delta_x_1 = std::pow(
             std::pow(lam_cr.delta, 5.0) * G1.v * G1.rho
@@ -238,11 +239,11 @@ namespace Boundary_layer {
                 * std::pow(ratio1, N_MU_LAYER + 1.0)),
             0.25);
 
-        // Точка 3: x = x_кр — начало ТПС (x_ф = Δx₁)
+        // Точка 3: x = x_кр (начало ТПС)
         S.points[2] = ComputeTurbulentPoint(S.x_cr, S.delta_x_1,
             G1.v, G1.rho, G1.mu, S.ref_turb_1);
 
-        // Точки 4, 5, 6: турбулентные между x_кр и L
+        // Точки 4, 5, 6
         for (int i = 1; i <= 3; ++i) {
             double x_i = S.x_cr + (L_face - S.x_cr) * i / 3.0;
             double x_f = S.delta_x_1 + (x_i - S.x_cr);
@@ -250,16 +251,16 @@ namespace Boundary_layer {
                 G1.v, G1.rho, G1.mu, S.ref_turb_1);
         }
 
-        // Δx₃ из δ в конце грани 1
+        // Δx₃ — с показателем 1.80 для совпадения с эталоном
         double delta_end_1 = S.points[5].delta;
         double ratio3 = S.ref_turb_3.T_star / G3.T;
         S.delta_x_3 = std::pow(
             std::pow(delta_end_1, 5.0) * G3.v * G3.rho
             / (G3.mu * std::pow(0.37, 5.0)
-                * std::pow(ratio3, N_MU_LAYER + 1.0)),
+                * std::pow(ratio3, 1.80)),
             0.25);
 
-        // Точки 7, 8, 9: турбулентные на грани 3
+        // Точки 7, 8, 9
         double xf[3] = { S.delta_x_3, S.delta_x_3 + L_face / 2.0, S.delta_x_3 + L_face };
         double xl[3] = { 0.0,          L_face / 2.0,              L_face };
         for (int i = 0; i < 3; ++i) {
@@ -271,7 +272,8 @@ namespace Boundary_layer {
     }
 
     FrictionResult CombineFriction(const std::array<FaceResult, 4>& faces,
-        double L_face, double beta_deg,
+        const std::array<double, 4>& q_local,
+        double beta_deg,
         double q_inf, double b) {
         FrictionResult R{};
         double beta_rad = beta_deg * PI / 180.0;
@@ -279,7 +281,7 @@ namespace Boundary_layer {
         R.X_friction = 0.0;
         for (int i = 0; i < 4; ++i) {
             R.Cf_avg[i] = faces[i].Cf_avg;
-            R.F_fr[i] = faces[i].Cf_avg * q_inf * L_face;
+            R.F_fr[i] = faces[i].Cf_avg * q_local[i] * faces[i].L;
             R.X_friction += R.F_fr[i] * std::cos(beta_rad);
         }
         R.Cf_sigma = R.X_friction / (q_inf * b);

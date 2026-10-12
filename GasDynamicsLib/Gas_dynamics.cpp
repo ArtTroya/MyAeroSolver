@@ -9,6 +9,7 @@ namespace Gas_dynamics {
     }
 
     double Viscosity(double T) {
+        // Степенная зависимость (по методичке)
         return MU_REF * std::pow(T / T_NORM, N_MU);
     }
 
@@ -41,31 +42,31 @@ namespace Gas_dynamics {
     }
 
     void FillTransport(GasState& s) {
-        s.Cp      = Cp(s.T);
-        s.mu      = Viscosity(s.T);
-        s.lambda  = ThermalConductivity(s.T);
-        s.a       = SpeedOfSound(s.T);
+        s.Cp = Cp(s.T);
+        s.mu = Viscosity(s.T);
+        s.lambda = ThermalConductivity(s.T);
+        s.a = SpeedOfSound(s.T);
         s.mu_mach = (s.M > 1.0) ? std::asin(1.0 / s.M) * 180.0 / PI : 90.0;
     }
 
     void FillStagnation(GasState& s) {
-        s.p0   = StagnationPressure(s.p, s.M);
+        s.p0 = StagnationPressure(s.p, s.M);
         s.rho0 = StagnationDensity(s.rho, s.M);
-        s.T0   = StagnationTemperature(s.T, s.M);
+        s.T0 = StagnationTemperature(s.T, s.M);
     }
 
     GasState FromMach(double p, double T, double M,
-                      double theta_shock_deg,
-                      double theta_flow_deg) {
+        double theta_shock_deg,
+        double theta_flow_deg) {
         GasState s{};
         s.p = p;
         s.T = T;
         s.M = M;
         s.rho = p / (Earth_atmosphere::R_AIR * T);
-        s.a   = SpeedOfSound(T);
-        s.v   = M * s.a;
+        s.a = SpeedOfSound(T);
+        s.v = M * s.a;
         s.theta_shock = theta_shock_deg;
-        s.theta_flow  = theta_flow_deg;
+        s.theta_flow = theta_flow_deg;
         FillTransport(s);
         FillStagnation(s);
         return s;

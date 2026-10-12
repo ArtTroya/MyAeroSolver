@@ -26,12 +26,21 @@ namespace Boundary_layer {
         double x_fictive;
         double Re_x;
         int    type;
+        // сжимаемый слой
         double delta;
         double delta_star;
         double delta_star_star;
         double tau;
         double Cfx;
         double Cf_avg;
+        // несжимаемый слой (для сравнения)
+        double Re_x_ns;
+        double delta_ns;
+        double delta_star_ns;
+        double delta_star_star_ns;
+        double tau_ns;
+        double Cfx_ns;
+        double Cf_ns;
     };
 
     struct FaceResult {
@@ -98,6 +107,7 @@ namespace Boundary_layer {
         double T_wall, double Re_cr_base);
 
     FrictionResult CombineFriction(const std::array<FaceResult, 4>& faces,
-        double L_face, double beta_deg,
+        const std::array<double, 4>& q_local,
+        double beta_deg,
         double q_inf, double b);
 }

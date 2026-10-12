@@ -88,12 +88,16 @@ namespace Report {
         f << "q_inf;" << aero.q_inf << ";Па\n";
 
         Sec(f, "5. Температуры восстановления и определяющие");
-        f << "Поверхность;Tr(lam), K;T*(lam), K;Tr(turb), K;T*(turb), K\n";
-        f << "Верхняя;"
+        f << "№;Tr(lam), K;T*(lam), K;Tr(turb), K;T*(turb), K\n";
+        f << "1;"
             << upper.ref_lam.Tr << ";" << upper.ref_lam.T_star << ";"
-            << upper.ref_turb_3.Tr << ";" << upper.ref_turb_3.T_star << "\n";
-        f << "Нижняя;"
+            << upper.ref_turb_1.Tr << ";" << upper.ref_turb_1.T_star << "\n";
+        f << "2;"
             << lower.ref_lam.Tr << ";" << lower.ref_lam.T_star << ";"
+            << lower.ref_turb_1.Tr << ";" << lower.ref_turb_1.T_star << "\n";
+        f << "3;-;-;"
+            << upper.ref_turb_3.Tr << ";" << upper.ref_turb_3.T_star << "\n";
+        f << "4;-;-;"
             << lower.ref_turb_3.Tr << ";" << lower.ref_turb_3.T_star << "\n";
 
         Sec(f, "6. Re критическое и координата перехода");

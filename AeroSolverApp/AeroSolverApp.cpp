@@ -23,25 +23,27 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
-    // Номер варианта
-    const int    N = 5;
+    // ============================================================
+    //  НАСТРОЙКИ ВАРИАНТА
+    // ============================================================
 
-    // Группа
+    const int    N = 18;
     const int    GROUP = 72;
 
-    // Выходные файлы 
-    const std::string FILE_REPORT = "report5.csv";
-    const std::string FILE_GRAPHS = "graphs5.csv";
+    const std::string FILE_REPORT = "report18.csv";
+    const std::string FILE_GRAPHS = "graphs18.csv";
 
-    // Геометрия профиля из таблицы 
+    // ============================================================
+    //  Формулы варианта
+    // ============================================================
+
     double c_mm, b_mm;
     if (N >= 1 && N <= 6) { c_mm = 80.0; b_mm = 1000.0; }
     else if (N >= 7 && N <= 12) { c_mm = 90.0; b_mm = 1100.0; }
     else if (N >= 13 && N <= 18) { c_mm = 100.0; b_mm = 1200.0; }
     else if (N >= 19 && N <= 24) { c_mm = 110.0; b_mm = 1300.0; }
-    else { c_mm = 100.0; b_mm = 1200.0; } // fallback
+    else { c_mm = 100.0; b_mm = 1200.0; }
 
-    // Высота, число Маха и температура стенки
     double H_km, M_inf, T_wall;
     if (GROUP == 71) {
         H_km = 10.0 + 0.6 * N;
@@ -60,6 +62,10 @@ int main() {
     const double b_m = b_mm * 1e-3;
     const double beta_deg = std::atan(c_m / b_m) * 180.0 / PI;
     const double L_face = std::sqrt(0.25 * (c_m * c_m + b_m * b_m));
+
+    // ============================================================
+    //  Расчёт
+    // ============================================================
 
     AtmosphereParams A = Calculate(h);
     GasState Ginf = FromMach(A.p, A.T, M_inf);
@@ -96,7 +102,15 @@ int main() {
         T_wall, delta_start_4);
 
     std::array<FaceResult, 4> faces = { face1, face2, face3, face4 };
-    FrictionResult FR = CombineFriction(faces, L_face, beta_deg, aero.q_inf, b_m);
+
+    std::array<double, 4> q_local = {
+        0.5 * F.regions[0].rho * F.regions[0].v * F.regions[0].v,
+        0.5 * F.regions[1].rho * F.regions[1].v * F.regions[1].v,
+        0.5 * F.regions[2].rho * F.regions[2].v * F.regions[2].v,
+        0.5 * F.regions[3].rho * F.regions[3].v * F.regions[3].v
+    };
+
+    FrictionResult FR = CombineFriction(faces, q_local, beta_deg, aero.q_inf, b_m);
 
     double alpha_rad = alpha_deg * PI / 180.0;
     double Cx_sum = aero.Cx + FR.Cf_sigma;
@@ -114,8 +128,8 @@ int main() {
     S.Cya_sum = Cya_sum;
     S.Cf_avg = FR.Cf_avg;
     S.F_fr = FR.F_fr;
-    std::cout << std::fixed << std::setprecision(4);
 
+    std::cout << std::fixed << std::setprecision(4);
 
     std::cout << "Курсовая работа: обтекание ромбовидного профиля\n";
     std::cout << "Вариант N = " << N << ", группа СМЗ-" << GROUP << "\n";
@@ -148,43 +162,11 @@ int main() {
         << ", Cya = " << aero.Cya << ", K = " << aero.K
         << ", Cd = " << aero.Cd << "\n\n";
 
-    std::cout << "Температуры восстановления и определяющие\n";
-    std::cout << "Поверхность  Tr(lam)  T*(lam)  Tr(turb)  T*(turb)\n";
-    std::cout << "  Верхняя     "
-        << std::setw(7) << upper.ref_lam.Tr << "  "
-        << std::setw(7) << upper.ref_lam.T_star << "  "
-        << std::setw(7) << upper.ref_turb_3.Tr << "  "
-        << std::setw(7) << upper.ref_turb_3.T_star << "\n";
-    std::cout << "  Нижняя      "
-        << std::setw(7) << lower.ref_lam.Tr << "  "
-        << std::setw(7) << lower.ref_lam.T_star << "  "
-        << std::setw(7) << lower.ref_turb_3.Tr << "  "
-        << std::setw(7) << lower.ref_turb_3.T_star << "\n\n";
-
     std::cout << "Re_cr и x_cr\n";
     std::cout << "  Верхняя: Re_cr = " << upper.Re_cr
         << ", x_cr = " << upper.x_cr << " м\n";
     std::cout << "  Нижняя:  Re_cr = " << lower.Re_cr
         << ", x_cr = " << lower.x_cr << " м\n\n";
-
-    auto printSurface = [&](const char* name, const SurfaceBL& s) {
-        std::cout << "Поверхность " << name << "\n";
-        std::cout << "  N   x,м     x_ф,м   тип   delta,м   tau,Па    Cfx\n";
-        for (int i = 0; i < N_POINTS; ++i) {
-            const auto& p = s.points[i];
-            std::cout << "  " << (i + 1) << "  "
-                << std::setw(6) << p.x << "  "
-                << std::setw(6) << p.x_fictive << "  "
-                << (p.type == 0 ? "лам" : "турб") << "  "
-                << std::setw(8) << p.delta << "  "
-                << std::setw(8) << p.tau << "  "
-                << std::setw(7) << p.Cfx << "\n";
-        }
-        std::cout << "\n";
-        };
-
-    printSurface("верхняя", upper);
-    printSurface("нижняя", lower);
 
     std::cout << "Средние Cf и силы трения\n";
     std::cout << "Грань  Cf_avg    F_тр,Н\n";
@@ -197,7 +179,7 @@ int main() {
     std::cout << "Cf_sigma = " << FR.Cf_sigma << "\n\n";
 
     std::cout << "Итоговые АДХ\n";
-    std::cout << "без трения   с трением    разница,%\n";
+    std::cout << "              без трения   с трением    разница,%\n";
     std::cout << "Cx  =  " << std::setw(11) << aero.Cx
         << std::setw(12) << Cx_sum
         << std::setw(12) << (Cx_sum / aero.Cx - 1.0) * 100.0 << "\n";
@@ -218,5 +200,7 @@ int main() {
 
     std::cout << "Отчёт сохранён: " << FILE_REPORT << "\n";
     std::cout << "Данные для графиков: " << FILE_GRAPHS << "\n\n";
+    std::cout << "Нажмите Enter для выхода...";
+    std::cin.get();
     return 0;
 }
