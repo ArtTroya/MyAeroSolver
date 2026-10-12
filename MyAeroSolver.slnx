@@ -6,7 +6,6 @@
   <Project Path="AerodynamicsLib/AerodynamicsLib.vcxproj" Id="465df7aa-a200-4f71-9b3e-ed4fb11caf4b" />
   <Project Path="AeroSolverApp/AeroSolverApp.vcxproj" Id="5b056f33-905a-4c5e-91d9-4684257a400a" />
   <Project Path="BoundaryLayerLib/BoundaryLayerLib.vcxproj" Id="b9ae58fd-417b-45a6-8c53-4690ec3a8831" />
-  <Project Path="Boundary_layer/Boundary_layer.vcxproj" />
   <Project Path="EarthAtmosphereLib/EarthAtmosphereLib.vcxproj" Id="50194a1a-8654-4994-8d67-ff11d1f30928" />
   <Project Path="FlowRegionsLib/FlowRegionsLib.vcxproj" Id="33b84e07-fe71-4a0e-a76f-6f1ffce3a889" />
   <Project Path="GasDynamicsLib/GasDynamicsLib.vcxproj" Id="38f2b87a-7ef9-4424-8b52-1c9bc225a606" />

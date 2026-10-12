@@ -51,35 +51,44 @@ namespace Report {
         f << "g;" << atm.g << ";м/с^2\n";
 
         Sec(f, "3. Параметры потока в 6 областях");
-        f << "Область;M;p,Па;p0,Па;rho,кг/м^3;T,K;T0,K;a,м/с;V,м/с;"
-            "Cp,Дж/(кг*K);mu,Па*с;lambda,Вт/(м*K);"
-            "theta_c,град;beta_flow,град;mu_mach,град\n";
+        f << "Область;M;p, 10^4 Па;p0, 10^7 Па;rho, кг/м^3;rho0, кг/м^3;"
+            "T, K;T0, K;a, м/с;V, м/с;"
+            "Cp, Дж/(кг*K);mu, 10^-5 Па*с;lambda, 10^-2 Вт/(м*K);"
+            "theta_c, град;beta_flow, град;mu_mach, град\n";
         for (int i = 0; i < 6; ++i) {
             const auto& G = F.regions[i];
             f << (i + 1) << ";"
-                << G.M << ";" << G.p << ";" << G.p0 << ";"
-                << G.rho << ";" << G.T << ";" << G.T0 << ";"
-                << G.a << ";" << G.v << ";" << G.Cp << ";"
-                << G.mu << ";" << G.lambda << ";"
+                << G.M << ";"
+                << G.p * 1e-4 << ";"
+                << G.p0 * 1e-7 << ";"
+                << G.rho << ";"
+                << G.rho0 << ";"
+                << G.T << ";"
+                << G.T0 << ";"
+                << G.a << ";"
+                << G.v << ";"
+                << G.Cp << ";"
+                << G.mu * 1e5 << ";"
+                << G.lambda * 100.0 << ";"
                 << F.theta_c_deg[i] << ";"
                 << F.beta_flow_deg[i] << ";"
                 << G.mu_mach << "\n";
         }
-        f << "delta,град;" << F.delta_deg << "\n";
+        f << "delta, град;" << F.delta_deg << "\n";
 
         Sec(f, "4. АДХ без учёта трения");
-        f << "Параметр;Значение\n";
-        f << "Cx;" << aero.Cx << "\n";
-        f << "Cy;" << aero.Cy << "\n";
-        f << "mz;" << aero.mz << "\n";
-        f << "Cxa;" << aero.Cxa << "\n";
-        f << "Cya;" << aero.Cya << "\n";
-        f << "K;" << aero.K << "\n";
-        f << "Cd;" << aero.Cd << "\n";
-        f << "q_inf,Па;" << aero.q_inf << "\n";
+        f << "Параметр;Значение;Единица\n";
+        f << "Cx;" << aero.Cx * 1e3 << ";10^-3\n";
+        f << "Cy;" << aero.Cy * 1e2 << ";10^-2\n";
+        f << "mz;" << aero.mz * 1e2 << ";10^-2\n";
+        f << "Cxa;" << aero.Cxa * 1e3 << ";10^-3\n";
+        f << "Cya;" << aero.Cya * 1e2 << ";10^-2\n";
+        f << "K;" << aero.K << ";\n";
+        f << "Cd;" << aero.Cd << ";\n";
+        f << "q_inf;" << aero.q_inf << ";Па\n";
 
         Sec(f, "5. Температуры восстановления и определяющие");
-        f << "Поверхность;Tr(lam),K;T*(lam),K;Tr(turb),K;T*(turb),K\n";
+        f << "Поверхность;Tr(lam), K;T*(lam), K;Tr(turb), K;T*(turb), K\n";
         f << "Верхняя;"
             << upper.ref_lam.Tr << ";" << upper.ref_lam.T_star << ";"
             << upper.ref_turb_3.Tr << ";" << upper.ref_turb_3.T_star << "\n";
@@ -88,27 +97,35 @@ namespace Report {
             << lower.ref_turb_3.Tr << ";" << lower.ref_turb_3.T_star << "\n";
 
         Sec(f, "6. Re критическое и координата перехода");
-        f << "Поверхность;Re_cr;x_cr,м;delta_x_1,м;delta_x_3,м\n";
-        f << "Верхняя;" << upper.Re_cr << ";" << upper.x_cr << ";"
-            << upper.delta_x_1 << ";" << upper.delta_x_3 << "\n";
-        f << "Нижняя;" << lower.Re_cr << ";" << lower.x_cr << ";"
-            << lower.delta_x_1 << ";" << lower.delta_x_3 << "\n";
+        f << "Поверхность;Re_cr, 10^6;x_cr, 10^-1 м;"
+            "delta_x_1, 10^-2 м;delta_x_3, 10^-2 м\n";
+        f << "Верхняя;"
+            << upper.Re_cr * 1e-6 << ";" << upper.x_cr * 10.0 << ";"
+            << upper.delta_x_1 * 100.0 << ";" << upper.delta_x_3 * 100.0 << "\n";
+        f << "Нижняя;"
+            << lower.Re_cr * 1e-6 << ";" << lower.x_cr * 10.0 << ";"
+            << lower.delta_x_1 * 100.0 << ";" << lower.delta_x_3 * 100.0 << "\n";
 
         Sec(f, "7. Параметры ПС по расчётным точкам");
 
         auto writeSurface = [&](const char* name,
             const Boundary_layer::SurfaceBL& s) {
                 f << "\nПоверхность " << name << "\n";
-                f << "N;x,м;x_фикт,м;тип;Re_x;"
-                    "delta,м;delta*,м;delta**,м;tau,Па;Cfx;Cf_avg\n";
+                f << "N;x, м;x_фикт, м;тип;Re_x, 10^6;"
+                    "delta, 10^-3 м;delta*, 10^-3 м;delta**, 10^-3 м;"
+                    "tau, Па;Cfx, 10^-3;Cf_avg, 10^-3\n";
                 for (int i = 0; i < Boundary_layer::N_POINTS; ++i) {
                     const auto& p = s.points[i];
                     f << (i + 1) << ";"
                         << p.x << ";" << p.x_fictive << ";"
                         << (p.type == 0 ? "лам" : "турб") << ";"
-                        << p.Re_x << ";" << p.delta << ";"
-                        << p.delta_star << ";" << p.delta_star_star << ";"
-                        << p.tau << ";" << p.Cfx << ";" << p.Cf_avg << "\n";
+                        << p.Re_x * 1e-6 << ";"
+                        << p.delta * 1e3 << ";"
+                        << p.delta_star * 1e3 << ";"
+                        << p.delta_star_star * 1e3 << ";"
+                        << p.tau << ";"
+                        << p.Cfx * 1e3 << ";"
+                        << p.Cf_avg * 1e3 << "\n";
                 }
             };
 
@@ -116,21 +133,29 @@ namespace Report {
         writeSurface("нижняя", lower);
 
         Sec(f, "8. Средние коэффициенты трения");
-        f << "Грань;Cf_avg;F_тр,Н\n";
+        f << "Грань;Cf_avg, 10^-3;F_тр, Н\n";
         for (int i = 0; i < 4; ++i) {
-            f << (i + 1) << ";" << S.Cf_avg[i] << ";" << S.F_fr[i] << "\n";
+            f << (i + 1) << ";"
+                << S.Cf_avg[i] * 1e3 << ";"
+                << S.F_fr[i] << "\n";
         }
-        f << "X_трение,Н;" << S.X_friction << "\n";
-        f << "Cf_sigma;" << S.Cf_sigma << "\n";
+        f << "X_трение, Н;" << S.X_friction << "\n";
+        f << "Cf_sigma, 10^-3;" << S.Cf_sigma * 1e3 << "\n";
 
         Sec(f, "9. Итоговые АДХ профиля");
-        f << "Параметр;Без трения;С трением;Изменение,%\n";
-        f << "Cx;" << aero.Cx << ";" << S.Cx_sum
-            << ";" << (S.Cx_sum / aero.Cx - 1.0) * 100.0 << "\n";
-        f << "Cxa;" << aero.Cxa << ";" << S.Cxa_sum
-            << ";" << (S.Cxa_sum / aero.Cxa - 1.0) * 100.0 << "\n";
-        f << "Cya;" << aero.Cya << ";" << S.Cya_sum
-            << ";" << (S.Cya_sum / aero.Cya - 1.0) * 100.0 << "\n";
+        f << "Параметр;Без трения;С трением;Изменение, %\n";
+        f << "Cx, 10^-3;"
+            << aero.Cx * 1e3 << ";"
+            << S.Cx_sum * 1e3 << ";"
+            << (S.Cx_sum / aero.Cx - 1.0) * 100.0 << "\n";
+        f << "Cxa, 10^-3;"
+            << aero.Cxa * 1e3 << ";"
+            << S.Cxa_sum * 1e3 << ";"
+            << (S.Cxa_sum / aero.Cxa - 1.0) * 100.0 << "\n";
+        f << "Cya, 10^-2;"
+            << aero.Cya * 1e2 << ";"
+            << S.Cya_sum * 1e2 << ";"
+            << (S.Cya_sum / aero.Cya - 1.0) * 100.0 << "\n";
     }
 
     void WriteGraphsCsv(const std::string& path,
@@ -146,13 +171,19 @@ namespace Report {
         auto writeSurf = [&](const char* name,
             const Boundary_layer::SurfaceBL& s) {
                 f << name << "\n";
-                f << "x_global,x_local,delta,delta_star,delta_star_star,tau,Cfx,тип\n";
+                f << "x_global, м;x_local, м;delta, 10^-3 м;"
+                    "delta*, 10^-3 м;delta**, 10^-3 м;tau, Па;"
+                    "Cfx, 10^-3;тип\n";
                 for (int i = 0; i < Boundary_layer::N_POINTS; ++i) {
                     const auto& p = s.points[i];
                     double xg = (i < 6) ? p.x : (L_face + p.x);
-                    f << xg << "," << p.x << "," << p.delta << ","
-                        << p.delta_star << "," << p.delta_star_star << ","
-                        << p.tau << "," << p.Cfx << ","
+                    f << xg << ";"
+                        << p.x << ";"
+                        << p.delta * 1e3 << ";"
+                        << p.delta_star * 1e3 << ";"
+                        << p.delta_star_star * 1e3 << ";"
+                        << p.tau << ";"
+                        << p.Cfx * 1e3 << ";"
                         << (p.type == 0 ? "лам" : "турб") << "\n";
                 }
                 f << "\n";

@@ -156,9 +156,6 @@
     <ProjectReference Include="..\BoundaryLayerLib\BoundaryLayerLib.vcxproj">
       <Project>{b9ae58fd-417b-45a6-8c53-4690ec3a8831}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Boundary_layer\Boundary_layer.vcxproj">
-      <Project>{a0f80b94-82ed-4c6e-a410-6e54ab1e8c85}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\EarthAtmosphereLib\EarthAtmosphereLib.vcxproj">
       <Project>{50194a1a-8654-4994-8d67-ff11d1f30928}</Project>
     </ProjectReference>
