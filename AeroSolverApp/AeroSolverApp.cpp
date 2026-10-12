@@ -23,19 +23,11 @@ int main() {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
-    // ============================================================
-    //  НАСТРОЙКИ ВАРИАНТА
-    // ============================================================
-
     const int    N = 18;
     const int    GROUP = 72;
 
     const std::string FILE_REPORT = "report18.csv";
     const std::string FILE_GRAPHS = "graphs18.csv";
-
-    // ============================================================
-    //  Формулы варианта
-    // ============================================================
 
     double c_mm, b_mm;
     if (N >= 1 && N <= 6) { c_mm = 80.0; b_mm = 1000.0; }
@@ -62,10 +54,6 @@ int main() {
     const double b_m = b_mm * 1e-3;
     const double beta_deg = std::atan(c_m / b_m) * 180.0 / PI;
     const double L_face = std::sqrt(0.25 * (c_m * c_m + b_m * b_m));
-
-    // ============================================================
-    //  Расчёт
-    // ============================================================
 
     AtmosphereParams A = Calculate(h);
     GasState Ginf = FromMach(A.p, A.T, M_inf);

@@ -26,14 +26,12 @@ namespace Boundary_layer {
         double x_fictive;
         double Re_x;
         int    type;
-        // сжимаемый слой
         double delta;
         double delta_star;
         double delta_star_star;
         double tau;
         double Cfx;
         double Cf_avg;
-        // несжимаемый слой (для сравнения)
         double Re_x_ns;
         double delta_ns;
         double delta_star_ns;

@@ -9,7 +9,6 @@ namespace Gas_dynamics {
     }
 
     double Viscosity(double T) {
-        // Степенная зависимость (по методичке)
         return MU_REF * std::pow(T / T_NORM, N_MU);
     }
 

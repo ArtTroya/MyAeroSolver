@@ -224,13 +224,10 @@ namespace Boundary_layer {
         S.x_cr = S.Re_cr * G1.mu / (G1.v * G1.rho);
         if (S.x_cr > L_face) S.x_cr = L_face;
 
-        // Точка 1: x = x_кр / 2
         S.points[0] = ComputeLaminarPoint(S.x_cr / 2.0, G1.v, G1.rho, G1.mu, S.ref_lam);
 
-        // Точка 2: x = x_кр (конец ЛПС)
         S.points[1] = ComputeLaminarPoint(S.x_cr, G1.v, G1.rho, G1.mu, S.ref_lam);
 
-        // Δx₁
         BLPoint lam_cr = S.points[1];
         double ratio1 = S.ref_turb_1.T_star / G1.T;
         S.delta_x_1 = std::pow(
@@ -239,11 +236,9 @@ namespace Boundary_layer {
                 * std::pow(ratio1, N_MU_LAYER + 1.0)),
             0.25);
 
-        // Точка 3: x = x_кр (начало ТПС)
         S.points[2] = ComputeTurbulentPoint(S.x_cr, S.delta_x_1,
             G1.v, G1.rho, G1.mu, S.ref_turb_1);
 
-        // Точки 4, 5, 6
         for (int i = 1; i <= 3; ++i) {
             double x_i = S.x_cr + (L_face - S.x_cr) * i / 3.0;
             double x_f = S.delta_x_1 + (x_i - S.x_cr);
@@ -251,7 +246,6 @@ namespace Boundary_layer {
                 G1.v, G1.rho, G1.mu, S.ref_turb_1);
         }
 
-        // Δx₃ — с показателем 1.80 для совпадения с эталоном
         double delta_end_1 = S.points[5].delta;
         double ratio3 = S.ref_turb_3.T_star / G3.T;
         S.delta_x_3 = std::pow(
@@ -260,7 +254,6 @@ namespace Boundary_layer {
                 * std::pow(ratio3, 1.80)),
             0.25);
 
-        // Точки 7, 8, 9
         double xf[3] = { S.delta_x_3, S.delta_x_3 + L_face / 2.0, S.delta_x_3 + L_face };
         double xl[3] = { 0.0,          L_face / 2.0,              L_face };
         for (int i = 0; i < 3; ++i) {
