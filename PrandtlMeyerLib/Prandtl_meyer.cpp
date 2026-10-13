@@ -20,11 +20,9 @@ namespace Prandtl_meyer {
     }
 
     double SolveMachFromOmega(double omega_deg) {
-        // Бисекция по M в диапазоне [1, 50]
         double target = omega_deg;
         double lo = 1.0, hi = 50.0;
 
-        // Если omega меньше нуля — поток не расширяется
         if (target <= 0.0) return 1.0;
 
         for (int i = 0; i < 80; ++i) {
@@ -46,7 +44,6 @@ namespace Prandtl_meyer {
         GasState out = G;
         out.M = M_out;
 
-        // Изоэнтропические соотношения через параметры торможения
         double denom = 1.0 + 0.5 * (k - 1.0) * M_out * M_out;
         out.p = G.p0 / std::pow(denom, k / (k - 1.0));
         out.rho = G.rho0 / std::pow(denom, 1.0 / (k - 1.0));

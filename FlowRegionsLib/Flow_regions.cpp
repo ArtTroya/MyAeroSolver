@@ -17,8 +17,8 @@ namespace Flow_regions {
         DeltaSolution result;
         result.delta_deg = 0.0;
 
-        const double tol = 1e-4;    // относительная разница p5 и p6
-        const double step = 0.001;   // градусы
+        const double tol = 1e-4;    
+        const double step = 0.001;  
         const int    max_iter = 20000;
 
         for (int it = 0; it < max_iter; ++it) {
@@ -59,18 +59,15 @@ namespace Flow_regions {
         double beta1 = beta_deg - alpha_deg;
         double beta2 = beta_deg + alpha_deg;
 
-        // Области 1, 2 — за косыми скачками
         F.regions[0] = Oblique_shock::JumpRelations(Ginf, beta1);
         F.regions[1] = Oblique_shock::JumpRelations(Ginf, beta2);
         F.theta_c_deg[0] = F.regions[0].theta_shock;
         F.theta_c_deg[1] = F.regions[1].theta_shock;
 
-        // Области 3, 4 — за веером Прандтля–Майера на угол 2β
         double turn = 2.0 * beta_deg;
         F.regions[2] = Prandtl_meyer::ExpandFlow(F.regions[0], turn);
         F.regions[3] = Prandtl_meyer::ExpandFlow(F.regions[1], turn);
 
-        // Области 5, 6 — за системой скачков в донном следе
         DeltaSolution D = SolveDelta(F.regions[2], F.regions[3], beta_deg);
         F.regions[4] = D.G5;
         F.regions[5] = D.G6;

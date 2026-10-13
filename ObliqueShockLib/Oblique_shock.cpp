@@ -9,8 +9,6 @@ namespace Oblique_shock {
     using Gas_dynamics::GasState;
     using Gas_dynamics::PI;
 
-    // Кубическое x^3 + a x^2 + b x + c = 0.
-    // Возвращает наименьший положительный корень.
     static std::optional<double> SmallestPositiveRoot(double a, double b, double c) {
         double p = -a * a / 3.0 + b;
         double q = 2.0 * (a / 3.0) * (a / 3.0) * (a / 3.0) - a * b / 3.0 + c;
@@ -61,7 +59,6 @@ namespace Oblique_shock {
     }
 
     double MaxDeflectionAngleDeg(double M) {
-        // beta_max достигается при Q = 0; ищем бисекцией
         double lo = 0.0, hi = 45.0;
         for (int i = 0; i < 60; ++i) {
             double mid = 0.5 * (lo + hi);
@@ -75,7 +72,7 @@ namespace Oblique_shock {
         const double k = Earth_atmosphere::GAMMA;
 
         ShockSolution sol = SolveShockAngle(G.M, beta_deg);
-        if (!sol.ok) return G;                 // вернём как есть, если решения нет
+        if (!sol.ok) return G;                
 
         double theta_c = sol.theta_c_deg * PI / 180.0;
         double beta = beta_deg * PI / 180.0;

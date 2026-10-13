@@ -117,67 +117,6 @@ int main() {
     S.Cf_avg = FR.Cf_avg;
     S.F_fr = FR.F_fr;
 
-    std::cout << std::fixed << std::setprecision(4);
-
-    std::cout << "Курсовая работа: обтекание ромбовидного профиля\n";
-    std::cout << "Вариант N = " << N << ", группа СМЗ-" << GROUP << "\n";
-    std::cout << "h = " << h << " м, M = " << M_inf
-        << ", alpha = " << alpha_deg << " град, beta = " << beta_deg
-        << " град, T_wall = " << T_wall << " K\n\n";
-
-    std::cout << "Атмосфера\n";
-    std::cout << "H = " << A.H << " м, T = " << A.T << " K, p = " << A.p
-        << " Па, rho = " << A.rho << " кг/м^3, a = " << A.a
-        << " м/с, g = " << A.g << " м/с^2\n\n";
-
-    std::cout << "Область  M      p,Па       T,K       rho       V,м/с     theta_c  beta_flow\n";
-    for (int i = 0; i < 6; ++i) {
-        const auto& G = F.regions[i];
-        std::cout << "  " << (i + 1) << "    "
-            << std::setw(7) << G.M << "  "
-            << std::setw(9) << G.p << "  "
-            << std::setw(7) << G.T << "  "
-            << std::setw(8) << G.rho << "  "
-            << std::setw(8) << G.v << "  "
-            << std::setw(7) << F.theta_c_deg[i] << "  "
-            << std::setw(7) << F.beta_flow_deg[i] << "\n";
-    }
-    std::cout << "\nУгол delta = " << F.delta_deg << " град\n\n";
-
-    std::cout << "АДХ без трения\n";
-    std::cout << "Cx = " << aero.Cx << ", Cy = " << aero.Cy
-        << ", mz = " << aero.mz << ", Cxa = " << aero.Cxa
-        << ", Cya = " << aero.Cya << ", K = " << aero.K
-        << ", Cd = " << aero.Cd << "\n\n";
-
-    std::cout << "Re_cr и x_cr\n";
-    std::cout << "  Верхняя: Re_cr = " << upper.Re_cr
-        << ", x_cr = " << upper.x_cr << " м\n";
-    std::cout << "  Нижняя:  Re_cr = " << lower.Re_cr
-        << ", x_cr = " << lower.x_cr << " м\n\n";
-
-    std::cout << "Средние Cf и силы трения\n";
-    std::cout << "Грань  Cf_avg    F_тр,Н\n";
-    for (int i = 0; i < 4; ++i) {
-        std::cout << "  " << (i + 1) << "    "
-            << std::setw(8) << FR.Cf_avg[i] << "  "
-            << std::setw(8) << FR.F_fr[i] << "\n";
-    }
-    std::cout << "X_трение = " << FR.X_friction << " Н\n";
-    std::cout << "Cf_sigma = " << FR.Cf_sigma << "\n\n";
-
-    std::cout << "Итоговые АДХ\n";
-    std::cout << "              без трения   с трением    разница,%\n";
-    std::cout << "Cx  =  " << std::setw(11) << aero.Cx
-        << std::setw(12) << Cx_sum
-        << std::setw(12) << (Cx_sum / aero.Cx - 1.0) * 100.0 << "\n";
-    std::cout << "Cxa =  " << std::setw(11) << aero.Cxa
-        << std::setw(12) << Cxa_sum
-        << std::setw(12) << (Cxa_sum / aero.Cxa - 1.0) * 100.0 << "\n";
-    std::cout << "Cya =  " << std::setw(11) << aero.Cya
-        << std::setw(12) << Cya_sum
-        << std::setw(12) << (Cya_sum / aero.Cya - 1.0) * 100.0 << "\n\n";
-
     CaseInput in{};
     in.N = N; in.h = h; in.M_inf = M_inf;
     in.alpha_deg = alpha_deg; in.beta_deg = beta_deg;
@@ -186,9 +125,4 @@ int main() {
     WriteReportCsv(FILE_REPORT, in, A, F, aero, upper, lower, S);
     WriteGraphsCsv(FILE_GRAPHS, upper, lower, L_face);
 
-    std::cout << "Отчёт сохранён: " << FILE_REPORT << "\n";
-    std::cout << "Данные для графиков: " << FILE_GRAPHS << "\n\n";
-    std::cout << "Нажмите Enter для выхода...";
-    std::cin.get();
-    return 0;
 }

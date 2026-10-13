@@ -5,11 +5,11 @@ namespace Gas_dynamics {
     constexpr double PI = 3.14159265358979323846;
 
     // Опорные значения свойств воздуха
-    constexpr double Cp_REF = 1004.7;      // Дж/(кг*K) 
-    constexpr double MU_REF = 1.79e-5;     // Па*с 
-    constexpr double LAMBDA_REF = 0.0232;      // Вт/(м*K) 
-    constexpr double T_NORM = 288.15;      // K
-    constexpr double T_LAMBDA_REF = 261.0;       // K
+    constexpr double Cp_REF = 1004.7;       
+    constexpr double MU_REF = 1.79e-5;      
+    constexpr double LAMBDA_REF = 0.0232;   
+    constexpr double T_NORM = 288.15;      
+    constexpr double T_LAMBDA_REF = 261.0;       
 
     // Показатели степенных зависимостей
     constexpr double PHI_CP = 0.1;
